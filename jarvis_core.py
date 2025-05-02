@@ -1,41 +1,48 @@
-import speech_recognition as sr
 import openai
-import os
+import pyttsx3
+import speech_recognition as sr
 
-openai.api_key = os.getenv("OPENAI_API_KEY")
+# Chave da OpenAI embutida diretamente no código
+openai.api_key = "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"
 
-def ouvir_comando():
-    recognizer = sr.Recognizer()
+engine = pyttsx3.init()
+recognizer = sr.Recognizer()
+
+def speak(text):
+    engine.say(text)
+    engine.runAndWait()
+
+def listen():
     with sr.Microphone() as source:
         print("🎙️ Ouvindo...")
         audio = recognizer.listen(source)
         try:
-            comando = recognizer.recognize_google(audio, language='pt-BR')
-            print(f"🗣️ Você disse: {comando}")
-            return comando.lower()
+            return recognizer.recognize_google(audio, language="pt-BR")
         except sr.UnknownValueError:
-            print("😕 Não entendi o que você disse.")
+            return "Não entendi o que você disse."
         except sr.RequestError:
-            print("❌ Erro ao se conectar com o serviço de voz.")
-    return ""
+            return "Erro ao acessar o serviço de reconhecimento."
 
-def responder_comando(comando):
+def ask_openai(prompt):
     try:
-        resposta = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=[{"role": "user", "content": comando}]
+        response = openai.Completion.create(
+            engine="text-davinci-003",
+            prompt=prompt,
+            max_tokens=100,
+            temperature=0.7
         )
-        return resposta.choices[0].message.content.strip()
+        return response.choices[0].text.strip()
     except Exception as e:
-        return f"Erro ao gerar resposta: {str(e)}"
+        return f"Jarvis: Erro ao gerar resposta: {e}"
 
 def main():
-    print("🧠 Jarvis iniciado. Diga algo!")
+    print("🤖 Jarvis iniciado. Diga algo!")
     while True:
-        comando = ouvir_comando()
-        if comando:
-            resposta = responder_comando(comando)
-            print(f"🤖 Jarvis: {resposta}")
+        question = listen()
+        print(f"🗣️ Você disse: {question}")
+        answer = ask_openai(question)
+        print(f"🤖 {answer}")
+        speak(answer)
 
 if __name__ == "__main__":
     main()
