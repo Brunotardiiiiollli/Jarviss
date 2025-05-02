@@ -16,34 +16,35 @@ def speak(text):
 
 def listen():
     with sr.Microphone() as source:
-        print("Ouvindo...")
+        print("🎤 Ouvindo...")
         audio = recognizer.listen(source)
         try:
             return recognizer.recognize_google(audio, language="pt-BR")
         except sr.UnknownValueError:
-            return "Não entendi o que você disse."
-        except sr.RequestError:
-            return "Erro ao acessar o serviço de reconhecimento."
+            return ""
 
-def gerar_resposta(prompt):
+def generate_response(user_input):
     try:
-        client = openai.OpenAI()
-        response = client.chat.completions.create(
+        response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": "Você é um assistente útil."},
-                {"role": "user", "content": prompt}
+                {"role": "system", "content": "Você é um assistente de voz"},
+                {"role": "user", "content": user_input}
             ]
         )
-        return response.choices[0].message.content.strip()
+        return response['choices'][0]['message']['content']
     except Exception as e:
-        print("Erro ao gerar resposta:", e)
-        return "Jarvis: Erro ao gerar resposta."
+        print(f"Jarvis: Erro ao gerar resposta: {e}")
+        return "Erro ao gerar resposta."
 
+# Loop principal
+print("🤖 Jarvis iniciado. Diga algo!")
 while True:
-    comando = listen()
-    print("Você disse:", comando)
-    resposta = gerar_resposta(comando)
-    print("Jarvis:", resposta)
-    speak(resposta)
+    user_input = listen()
+    print(f"Você disse: {user_input}")
+    if user_input:
+        response = generate_response(user_input)
+        print(f"Jarvis: {response}")
+        speak(response)
+
 
