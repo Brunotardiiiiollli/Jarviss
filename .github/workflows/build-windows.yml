@@ -24,7 +24,7 @@ jobs:
 
       - name: Build EXE
         run: |
-          pyinstaller --noconfirm --clean jarvis_gui.spec
+          pyinstaller --noconfirm --clean --onefile jarvis_core.py
           # makensis installer.nsi
 
 
