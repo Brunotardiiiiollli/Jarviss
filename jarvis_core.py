@@ -3,7 +3,7 @@ import pyttsx3
 import speech_recognition as sr
 
 # Chave da OpenAI embutida diretamente no código
-openai.api_key = "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"
+openai.api_key = "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"
 
 engine = pyttsx3.init()
 recognizer = sr.Recognizer()
