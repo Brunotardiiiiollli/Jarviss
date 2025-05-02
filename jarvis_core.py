@@ -1,9 +1,11 @@
 import openai
 import pyttsx3
 import speech_recognition as sr
+import os
+from dotenv import load_dotenv
 
-# Chave da OpenAI embutida diretamente no código
-openai.api_key = "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"
+load_dotenv()
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 engine = pyttsx3.init()
 recognizer = sr.Recognizer()
@@ -14,7 +16,7 @@ def speak(text):
 
 def listen():
     with sr.Microphone() as source:
-        print("🎙️ Ouvindo...")
+        print("Ouvindo...")
         audio = recognizer.listen(source)
         try:
             return recognizer.recognize_google(audio, language="pt-BR")
@@ -23,26 +25,25 @@ def listen():
         except sr.RequestError:
             return "Erro ao acessar o serviço de reconhecimento."
 
-def ask_openai(prompt):
+def gerar_resposta(prompt):
     try:
-        response = openai.Completion.create(
-            engine="text-davinci-003",
-            prompt=prompt,
-            max_tokens=100,
-            temperature=0.7
+        client = openai.OpenAI()
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "Você é um assistente útil."},
+                {"role": "user", "content": prompt}
+            ]
         )
-        return response.choices[0].text.strip()
+        return response.choices[0].message.content.strip()
     except Exception as e:
-        return f"Jarvis: Erro ao gerar resposta: {e}"
+        print("Erro ao gerar resposta:", e)
+        return "Jarvis: Erro ao gerar resposta."
 
-def main():
-    print("🤖 Jarvis iniciado. Diga algo!")
-    while True:
-        question = listen()
-        print(f"🗣️ Você disse: {question}")
-        answer = ask_openai(question)
-        print(f"🤖 {answer}")
-        speak(answer)
+while True:
+    comando = listen()
+    print("Você disse:", comando)
+    resposta = gerar_resposta(comando)
+    print("Jarvis:", resposta)
+    speak(resposta)
 
-if __name__ == "__main__":
-    main()
